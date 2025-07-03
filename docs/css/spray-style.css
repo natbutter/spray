@@ -90,3 +90,11 @@
     }
 }
 
+#font-size-controls {
+    text-align: center;
+    margin-top: 10px;
+}
+
+#font-size-controls button {
+    margin: 0 5px;
+}
