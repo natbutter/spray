@@ -1,5 +1,6 @@
 var SprayReader = function(container){
   this.container = $(container);
+  this.fontSize = 64; // Initial font size
 };
 SprayReader.prototype = {
   wpm: null,
@@ -86,6 +87,18 @@ SprayReader.prototype = {
     if (thisObj.wordIdx >= thisObj.words.length) {
       this.wordIdx = 0;
       this.stop();
+    }
+  },
+
+  increaseFontSize: function() {
+    this.fontSize += 4;
+    this.container.css('font-size', this.fontSize + 'px');
+  },
+
+  decreaseFontSize: function() {
+    if (this.fontSize > 4) { // Prevent font size from becoming too small
+      this.fontSize -= 4;
+      this.container.css('font-size', this.fontSize + 'px');
     }
   }
 };
