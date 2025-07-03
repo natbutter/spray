@@ -1,6 +1,8 @@
 var SprayReader = function(container){
   this.container = $(container);
-  this.fontSize = 64; // Initial font size
+  // Get initial font size from CSS (e.g., "3vw") and parse the number
+  var initialFontSizeCss = this.container.css('font-size');
+  this.fontSize = parseFloat(initialFontSizeCss) || 3; // Default to 3 if parsing fails
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
 };
 SprayReader.prototype = {
@@ -80,7 +82,7 @@ SprayReader.prototype = {
   },
 
   displayWordAndIncrement: function() {
-    var pivotedWord = pivot(this.words[this.wordIdx], this.fontSize); // Pass fontSize
+    var pivotedWord = pivot(this.words[this.wordIdx]); // Call pivot without fontSize
 
     this.container.html(pivotedWord);
 
@@ -92,22 +94,22 @@ SprayReader.prototype = {
   },
 
   increaseFontSize: function() {
-    this.fontSize += 4;
-    this.container.css('font-size', this.fontSize + 'px');
-    this.guideElements.css('font-size', this.fontSize + 'px');
+    this.fontSize += 0.5; // Increment vw unit
+    this.container.css('font-size', this.fontSize + 'vw');
+    // guideElements will inherit font-size from container
   },
 
   decreaseFontSize: function() {
-    if (this.fontSize > 4) { // Prevent font size from becoming too small
-      this.fontSize -= 4;
-      this.container.css('font-size', this.fontSize + 'px');
-      this.guideElements.css('font-size', this.fontSize + 'px');
+    if (this.fontSize > 1) { // Prevent font size from becoming too small (1vw is a reasonable lower limit)
+      this.fontSize -= 0.5; // Decrement vw unit
+      this.container.css('font-size', this.fontSize + 'vw');
+      // guideElements will inherit font-size from container
     }
   }
 };
 
 // Find the red-character of the current word.
-function pivot(word, fontSize){ // Added fontSize parameter
+function pivot(word){ // Removed fontSize parameter
     var length = word.length;
 
     // Longer words are "right-weighted" for easier readability.
@@ -135,11 +137,11 @@ function pivot(word, fontSize){ // Added fontSize parameter
         }
 
         var result;
-        // Added inline style for font-size
-        result = "<span class='spray_start' style='font-size:" + fontSize + "px;'>" + start.slice(0, start.length -1);
-        result = result + "</span><span class='spray_pivot' style='font-size:" + fontSize + "px;'>";
+        // Removed inline style for font-size, they will inherit from parent
+        result = "<span class='spray_start'>" + start.slice(0, start.length -1);
+        result = result + "</span><span class='spray_pivot'>";
         result = result + start.slice(start.length-1, start.length);
-        result = result + "</span><span class='spray_end' style='font-size:" + fontSize + "px;'>";
+        result = result + "</span><span class='spray_end'>";
         result = result + end;
         result = result + "</span>";
     }
@@ -153,17 +155,17 @@ function pivot(word, fontSize){ // Added fontSize parameter
         var end = word.slice(word.length/2, word.length);
 
         var result;
-        // Added inline style for font-size
-        result = "<span class='spray_start' style='font-size:" + fontSize + "px;'>" + start.slice(0, start.length -1);
-        result = result + "</span><span class='spray_pivot' style='font-size:" + fontSize + "px;'>";
+        // Removed inline style for font-size, they will inherit from parent
+        result = "<span class='spray_start'>" + start.slice(0, start.length -1);
+        result = result + "</span><span class='spray_pivot'>";
         result = result + start.slice(start.length-1, start.length);
-        result = result + "</span><span class='spray_end' style='font-size:" + fontSize + "px;'>";
+        result = result + "</span><span class='spray_end'>";
         result = result + end;
         result = result + "</span>";
 
     }
 
-    result = result.replace(/\./g, "<span class='invisible' style='font-size:" + fontSize + "px;'>.</span>"); // Also for invisible utility class
+    result = result.replace(/\./g, "<span class='invisible'>.</span>"); // Also for invisible utility class
 
     return result;
 }
