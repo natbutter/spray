@@ -12,33 +12,55 @@
 
 #spray_container{
     background-color: #ffffff;
+    text-align: center;
+    font-size: 3vw;
+    font-family: 'Droid Sans Mono', sans-serif;
 }
 
 #spray_result{
     text-align: center;
-    font-size: 64px;
-    font-family: 'Droid Sans Mono', sans-serif;
+/*     font-size: 64px;
+    font-family: 'Droid Sans Mono', sans-serif; */
 }
 
 #guide_top{
     text-align: center;
-    font-size: 64px;
-    font-family: 'Droid Sans Mono', sans-serif;
+/*     font-size: 64px;
+    font-family: 'Droid Sans Mono', sans-serif; */
     color: #DDDDDD;
 }
 
 #guide_bottom{
     text-align: center;
-    font-size: 64px;
-    font-family: 'Droid Sans Mono', sans-serif;
+/*     font-size: 64px;
+    font-family: 'Droid Sans Mono', sans-serif; */
     color: #DDDDDD;
 }
 
 #notch{
     text-align: center;
-    font-size: 64px;
-    font-family: 'Droid Sans Mono', sans-serif;
+/*     font-size: 64px;
+    font-family: 'Droid Sans Mono', sans-serif; */
     color: #DDDDDD;
+}
+
+.spray_start{
+    color: #333333;
+/*     text-align: center;
+    font-size: 64px;
+    font-family: 'Droid Sans Mono', sans-serif; */
+}
+.spray_pivot{
+    color: #DE0000;
+/*     text-align: center;
+    font-size: 64px;
+    font-family: 'Droid Sans Mono', sans-serif; */
+}
+.spray_end{
+    color: #333333;
+/*     text-align: center;
+    font-size: 64px;
+    font-family: 'Droid Sans Mono', sans-serif; */
 }
 
 #spray_credits{
@@ -62,33 +84,14 @@
     color: #ffffff;
 }
 
-.spray_start{
-    color: #333333;
-    text-align: center;
-    font-size: 64px;
-    font-family: 'Droid Sans Mono', sans-serif;
-}
-.spray_pivot{
-    color: #DE0000;
-    text-align: center;
-    font-size: 64px;
-    font-family: 'Droid Sans Mono', sans-serif;
-}
-.spray_end{
-    color: #333333;
-    text-align: center;
-    font-size: 64px;
-    font-family: 'Droid Sans Mono', sans-serif;
-}
-
-@media only screen and (max-device-width: 480px){
+/* @media only screen and (max-device-width: 480px){
     #spray_result, #guide_top, #guide_bottom, #notch, #spray_start, #spray_pivot, #spray_end{
         font-size:14px;
     }
     .spray_start, .spray_pivot, .spray_end{
         font-size:14px;
     }
-}
+} */
 
 #font-size-controls {
     text-align: center;
