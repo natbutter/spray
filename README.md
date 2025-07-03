@@ -5,15 +5,15 @@ An open-source speed-reading application written in Javascript.
 
 # About
 
-Spray is an open-source speed-reading application written in Javascript. It was inspired by [OpenSpritz](https://raw.github.com/Miserlou/OpenSpritz/) and currently contains the algorithm from that project, as well as the same styles.
+Spray is an open-source speed-reading application written in Javascript. It was inspired by [OpenSpritz](https://github.com/the-happy-hippo) and currently contains the algorithm from that project, as well as the same styles.
 
 ## Demo
 
-Fully functional demo: http://the-happy-hippo.github.io/spray/content
+Fully functional demo: https://natbutter.github.io/spray/
 
 ## Installation
 
-1. Copy all files in `content/` to some directory on your webserver.
+1. Copy all files in `docs/` to some directory on your webserver.
 2. Enjoy speed-reading.
 
 ## Features
