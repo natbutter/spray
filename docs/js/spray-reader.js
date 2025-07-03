@@ -1,6 +1,7 @@
 var SprayReader = function(container){
   this.container = $(container);
   this.fontSize = 64; // Initial font size
+  this.guideElements = $('#guide_top, #guide_bottom, #notch');
 };
 SprayReader.prototype = {
   wpm: null,
@@ -79,7 +80,7 @@ SprayReader.prototype = {
   },
 
   displayWordAndIncrement: function() {
-    var pivotedWord = pivot(this.words[this.wordIdx]);
+    var pivotedWord = pivot(this.words[this.wordIdx], this.fontSize); // Pass fontSize
 
     this.container.html(pivotedWord);
 
@@ -93,18 +94,20 @@ SprayReader.prototype = {
   increaseFontSize: function() {
     this.fontSize += 4;
     this.container.css('font-size', this.fontSize + 'px');
+    this.guideElements.css('font-size', this.fontSize + 'px');
   },
 
   decreaseFontSize: function() {
     if (this.fontSize > 4) { // Prevent font size from becoming too small
       this.fontSize -= 4;
       this.container.css('font-size', this.fontSize + 'px');
+      this.guideElements.css('font-size', this.fontSize + 'px');
     }
   }
 };
 
 // Find the red-character of the current word.
-function pivot(word){
+function pivot(word, fontSize){ // Added fontSize parameter
     var length = word.length;
 
     // Longer words are "right-weighted" for easier readability.
@@ -132,10 +135,11 @@ function pivot(word){
         }
 
         var result;
-        result = "<span class='spray_start'>" + start.slice(0, start.length -1);
-        result = result + "</span><span class='spray_pivot'>";
+        // Added inline style for font-size
+        result = "<span class='spray_start' style='font-size:" + fontSize + "px;'>" + start.slice(0, start.length -1);
+        result = result + "</span><span class='spray_pivot' style='font-size:" + fontSize + "px;'>";
         result = result + start.slice(start.length-1, start.length);
-        result = result + "</span><span class='spray_end'>";
+        result = result + "</span><span class='spray_end' style='font-size:" + fontSize + "px;'>";
         result = result + end;
         result = result + "</span>";
     }
@@ -149,16 +153,17 @@ function pivot(word){
         var end = word.slice(word.length/2, word.length);
 
         var result;
-        result = "<span class='spray_start'>" + start.slice(0, start.length -1);
-        result = result + "</span><span class='spray_pivot'>";
+        // Added inline style for font-size
+        result = "<span class='spray_start' style='font-size:" + fontSize + "px;'>" + start.slice(0, start.length -1);
+        result = result + "</span><span class='spray_pivot' style='font-size:" + fontSize + "px;'>";
         result = result + start.slice(start.length-1, start.length);
-        result = result + "</span><span class='spray_end'>";
+        result = result + "</span><span class='spray_end' style='font-size:" + fontSize + "px;'>";
         result = result + end;
         result = result + "</span>";
 
     }
 
-    result = result.replace(/\./g, "<span class='invisible'>.</span>");
+    result = result.replace(/\./g, "<span class='invisible' style='font-size:" + fontSize + "px;'>.</span>"); // Also for invisible utility class
 
     return result;
 }
