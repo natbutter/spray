@@ -97,6 +97,11 @@ SprayReader.prototype = {
       wordToSpeak = wordToSpeak.replace(/[•:,.;?!()-]/g, '');
       if (wordToSpeak.trim().length > 0) {
         var utterance = new SpeechSynthesisUtterance(wordToSpeak);
+        // Calculate speech rate based on WPM
+        // Baseline: 150 WPM = rate 1.0
+        // Clamp rate between 0.5 and 4 for quality and compatibility
+        var calculatedRate = this.wpm / 150;
+        utterance.rate = Math.max(0.5, Math.min(calculatedRate, 4));
         this.speechSynthesis.speak(utterance);
       }
     }
