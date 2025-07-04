@@ -1,9 +1,7 @@
-var SprayReader = function(containerSelector){ // containerSelector will be '#spray_result' initially
-  // Change this.container to point to #spray_container for font size adjustments
+var SprayReader = function(containerSelector){ 
   this.container = $('#spray_container');
-  this.sprayResultElement = $(containerSelector); // Keep a reference to the original spray_result element
-  // Initial font size is 3vw as defined in spray-style.css (or inherited)
-  this.fontSize = 3; // Get initial size or default to 3
+  this.sprayResultElement = $(containerSelector); 
+  this.fontSize = 3; 
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
   this.speechSynthesis = window.speechSynthesis;
   this.isAudioEnabled = false;
@@ -225,18 +223,17 @@ SprayReader.prototype = {
   },
 
   increaseFontSize: function() {
-    if (this.fontSize < 4) {
-      this.fontSize += 0.5; // Increment vw unit
+    if (this.fontSize < 10) { // Prevent font size from becoming too large
+      this.fontSize += 0.5; 
+      this.container.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
       this.container.css('font-size', this.fontSize + 'vw');
-      // guideElements will inherit font-size from container
     }
   },
 
   decreaseFontSize: function() {
-    if (this.fontSize > 1) { // Prevent font size from becoming too small (1vw is a reasonable lower limit)
-      this.fontSize -= 0.5; // Decrement vw unit
-      this.container.css('font-size', this.fontSize + 'vw');
-      // guideElements will inherit font-size from container
+    if (this.fontSize > 1) { 
+      this.fontSize -= 0.5; 
+      this.container.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
     }
   }
 };
