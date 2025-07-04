@@ -3,7 +3,7 @@ var SprayReader = function(containerSelector){ // containerSelector will be '#sp
   this.container = $('#spray_container');
   this.sprayResultElement = $(containerSelector); // Keep a reference to the original spray_result element
   // Initial font size is 3vw as defined in spray-style.css (or inherited)
-  this.fontSize = parseFloat(this.container.css('font-size')) || 3; // Get initial size or default to 3
+  this.fontSize = 3; // Get initial size or default to 3
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
   this.speechSynthesis = window.speechSynthesis;
   this.isAudioEnabled = false;
