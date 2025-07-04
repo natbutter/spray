@@ -1,8 +1,7 @@
 var SprayReader = function(container){
   this.container = $(container);
-  // Get initial font size from CSS (e.g., "3vw") and parse the number
-  var initialFontSizeCss = this.container.css('font-size');
-  this.fontSize = parseFloat(initialFontSizeCss) || 3; // Default to 3 if parsing fails
+  // Initial font size is 3vw as defined in spray-style.css
+  this.fontSize = 3;
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
   this.speechSynthesis = window.speechSynthesis;
   this.isAudioEnabled = false;
