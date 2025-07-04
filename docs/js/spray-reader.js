@@ -1,7 +1,9 @@
-var SprayReader = function(container){
-  this.container = $(container);
-  // Initial font size is 3vw as defined in spray-style.css
-  this.fontSize = 3;
+var SprayReader = function(containerSelector){ // containerSelector will be '#spray_result' initially
+  // Change this.container to point to #spray_container for font size adjustments
+  this.container = $('#spray_container');
+  this.sprayResultElement = $(containerSelector); // Keep a reference to the original spray_result element
+  // Initial font size is 3vw as defined in spray-style.css (or inherited)
+  this.fontSize = parseFloat(this.container.css('font-size')) || 3; // Get initial size or default to 3
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
   this.speechSynthesis = window.speechSynthesis;
   this.isAudioEnabled = false;
@@ -122,7 +124,7 @@ SprayReader.prototype = {
 
     var currentWord = this.words[this.wordIdx];
     var pivotedWord = pivot(currentWord);
-    this.container.html(pivotedWord);
+    this.sprayResultElement.html(pivotedWord); // Display word in #spray_result
 
     var thisObj = this; // Store 'this' for use in callbacks
 
