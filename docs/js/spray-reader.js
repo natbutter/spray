@@ -226,7 +226,6 @@ SprayReader.prototype = {
     if (this.fontSize < 10) { // Prevent font size from becoming too large
       this.fontSize += 0.5; 
       this.container.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
-      this.container.css('font-size', this.fontSize + 'vw');
     }
   },
 
