@@ -94,6 +94,11 @@
               <option value="800">800 wpm</option>
             </select>
           </div>
+          <div class="col-md-4"> <!-- Adjusted column size for checkbox -->
+            <label class="checkbox-inline control-label">
+              <input type="checkbox" id="audio-enable" name="audio-enable"> Enable Audio
+            </label>
+          </div>
         </div>
 
         <!-- Button (Double) -->
@@ -154,6 +159,13 @@
           $('#decrease-font').click(function(event) {
             sprayReader.decreaseFontSize();
             event.preventDefault();
+          });
+
+          $('#audio-enable').change(function(event) {
+            sprayReader.isAudioEnabled = $(this).is(':checked');
+            if (!sprayReader.isAudioEnabled && sprayReader.speechSynthesis && sprayReader.speechSynthesis.speaking) {
+              sprayReader.speechSynthesis.cancel();
+            }
           });
         });
     </script>

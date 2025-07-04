@@ -4,6 +4,8 @@ var SprayReader = function(container){
   var initialFontSizeCss = this.container.css('font-size');
   this.fontSize = parseFloat(initialFontSizeCss) || 3; // Default to 3 if parsing fails
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
+  this.speechSynthesis = window.speechSynthesis;
+  this.isAudioEnabled = false;
 };
 SprayReader.prototype = {
   wpm: null,
@@ -79,6 +81,9 @@ SprayReader.prototype = {
     for(var i = 0; i < this.timers.length; i++) {
       clearTimeout(this.timers[i]);
     }
+    if (this.speechSynthesis && this.speechSynthesis.speaking) {
+      this.speechSynthesis.cancel();
+    }
   },
 
   displayWordAndIncrement: function() {
@@ -86,8 +91,18 @@ SprayReader.prototype = {
 
     this.container.html(pivotedWord);
 
+    if (this.isAudioEnabled && this.speechSynthesis) {
+      var wordToSpeak = this.words[this.wordIdx];
+      // Basic cleaning: remove punctuation that might be harsh in speech
+      wordToSpeak = wordToSpeak.replace(/[•:,.;?!()-]/g, '');
+      if (wordToSpeak.trim().length > 0) {
+        var utterance = new SpeechSynthesisUtterance(wordToSpeak);
+        this.speechSynthesis.speak(utterance);
+      }
+    }
+
     this.wordIdx++;
-    if (thisObj.wordIdx >= thisObj.words.length) {
+    if (this.wordIdx >= this.words.length) { // Changed thisObj to this
       this.wordIdx = 0;
       this.stop();
     }
