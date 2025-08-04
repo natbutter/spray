@@ -2,6 +2,7 @@ var SprayReader = function(containerSelector){
   this.container = $('#spray_container');
   this.sprayResultElement = $(containerSelector);
   this.wordCounterElement = $('#word_counter');
+  this.highlighter = $('#input-text-highlighter');
   this.fontSize = 3; 
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
   this.speechSynthesis = window.speechSynthesis;
@@ -19,45 +20,53 @@ SprayReader.prototype = {
 
   setInput: function(input) {
     this.input = input;
+    this.highlighter.html('');
 
-    // Split on spaces
-    var allWords = input.split(/\s+/);
-
-    var word = '';
-    var result = '';
+    var re = /\S+/g;
+    var match;
+    var allWords = [];
+    while(match = re.exec(input)) {
+        allWords.push({
+            word: match[0],
+            start: match.index,
+            end: match.index + match[0].length
+        });
+    }
 
     // Preprocess words
-    var tmpWords = allWords.slice(0); // copy Array
-    var t = 0;
+    var tmpWords = [];
 
     for (var i=0; i<allWords.length; i++){
+      var wordObj = allWords[i];
+      var word = wordObj.word;
 
-      if(allWords[i].indexOf('.') != -1){
-        tmpWords[t] = allWords[i].replace('.', '•');
+      var processedWordObj = {
+          word: word,
+          start: wordObj.start,
+          end: wordObj.end
+      };
+
+      if(word.indexOf('.') != -1){
+        processedWordObj.word = word.replace('.', '•');
       }
+      tmpWords.push(processedWordObj);
 
       // Double up on long words and words with commas.
-      if((allWords[i].indexOf(',') != -1 || allWords[i].indexOf(':') != -1 || allWords[i].indexOf('-') != -1 || allWords[i].indexOf('(') != -1|| allWords[i].length > 8) && allWords[i].indexOf('.') == -1){
-        tmpWords.splice(t+1, 0, allWords[i]);
-        tmpWords.splice(t+1, 0, allWords[i]);
-        t++;
-        t++;
+      if((word.indexOf(',') != -1 || word.indexOf(':') != -1 || word.indexOf('-') != -1 || word.indexOf('(') != -1|| word.length > 8) && word.indexOf('.') == -1){
+        tmpWords.push(processedWordObj);
+        tmpWords.push(processedWordObj);
       }
 
       // Add an additional space after punctuation.
-      if(allWords[i].indexOf('.') != -1 || allWords[i].indexOf('!') != -1 || allWords[i].indexOf('?') != -1 || allWords[i].indexOf(':') != -1 || allWords[i].indexOf(';') != -1|| allWords[i].indexOf(')') != -1){
-        tmpWords.splice(t+1, 0, ".");
-        tmpWords.splice(t+1, 0, ".");
-        tmpWords.splice(t+1, 0, ".");
-        t++;
-        t++;
-        t++;
+      if(word.indexOf('.') != -1 || word.indexOf('!') != -1 || word.indexOf('?') != -1 || word.indexOf(':') != -1 || word.indexOf(';') != -1|| word.indexOf(')') != -1){
+        var pauseObj = { word: '.', start: -1, end: -1 };
+        tmpWords.push(pauseObj);
+        tmpWords.push(pauseObj);
+        tmpWords.push(pauseObj);
       }
-
-      t++;
     }
 
-    this.words = tmpWords.slice(0);
+    this.words = tmpWords;
     this.totalWordCount = this.words.length;
     this.wordIdx = 0;
     this.wordCounterElement.text("0 / " + this.totalWordCount);
@@ -112,6 +121,7 @@ SprayReader.prototype = {
     if (this.wordCounterElement) {
         this.wordCounterElement.text("0 / " + this.totalWordCount);
     }
+    this.highlighter.html('');
   },
 
   displayWordAndIncrement: function() {
@@ -129,7 +139,9 @@ SprayReader.prototype = {
     }
     this.timers = [];
 
-    var currentWord = this.words[this.wordIdx];
+    var currentWordObj = this.words[this.wordIdx];
+    this.highlightWord(currentWordObj);
+    var currentWord = currentWordObj.word;
     var pivotedWord = pivot(currentWord);
     this.sprayResultElement.html(pivotedWord); // Display word in #spray_result
 
@@ -185,7 +197,7 @@ SprayReader.prototype = {
             if (thisObj.wordIdx >= thisObj.words.length) {
               thisObj.stop();
             } else {
-              scheduleNextWord(thisObj.msPerWord); // Schedule next word with standard delay
+              scheduleNextWord(this.msPerWord); // Schedule next word with standard delay
             }
           }
         };
@@ -243,6 +255,21 @@ SprayReader.prototype = {
       this.fontSize -= 0.5; 
       this.container.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
     }
+  },
+
+  highlightWord: function(wordObj) {
+    if (wordObj.start === -1) {
+      this.highlighter.html('');
+      return;
+    }
+
+    var text = this.input;
+    var before = text.substring(0, wordObj.start);
+    var word = text.substring(wordObj.start, wordObj.end);
+    var after = text.substring(wordObj.end);
+
+    var html = before + '<span class="highlight">' + word + '</span>' + after;
+    this.highlighter.html(html);
   }
 };
 
