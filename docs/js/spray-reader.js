@@ -1,6 +1,7 @@
 var SprayReader = function(containerSelector){ 
   this.container = $('#spray_container');
-  this.sprayResultElement = $(containerSelector); 
+  this.sprayResultElement = $(containerSelector);
+  this.wordCounterElement = $('#word_counter');
   this.fontSize = 3; 
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
   this.speechSynthesis = window.speechSynthesis;
@@ -12,6 +13,7 @@ SprayReader.prototype = {
   wordIdx: null,
   input: null,
   words: null,
+  totalWordCount: 0,
   isRunning: false,
   timers: [],
 
@@ -56,7 +58,9 @@ SprayReader.prototype = {
     }
 
     this.words = tmpWords.slice(0);
+    this.totalWordCount = this.words.length;
     this.wordIdx = 0;
+    this.wordCounterElement.text("0 / " + this.totalWordCount);
   },
 
   setWpm: function(wpm) {
@@ -105,6 +109,9 @@ SprayReader.prototype = {
       this.speechSynthesis.cancel();
     }
     // No need to reset wordIdx here, as starting again should handle it or setInput.
+    if (this.wordCounterElement) {
+        this.wordCounterElement.text("0 / " + this.totalWordCount);
+    }
   },
 
   displayWordAndIncrement: function() {
@@ -112,6 +119,8 @@ SprayReader.prototype = {
       this.stop();
       return;
     }
+
+    this.wordCounterElement.text((this.wordIdx + 1) + " / " + this.totalWordCount);
 
     // Clear any existing timers before displaying the next word
     // This is important if displayWordAndIncrement is called ahead of schedule (e.g. by a premature fallback)
