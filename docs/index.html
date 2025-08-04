@@ -57,11 +57,6 @@
         <div id="guide_bottom">
             ——————————————————————————
         </div>
-        <div id="word_counter"></div>
-        <div id="font-size-controls">
-          <button id="decrease-font" class="btn btn-default btn-sm">-</button>
-          <button id="increase-font" class="btn btn-default btn-sm">+</button>
-        </div>
       </div>
     </div>
 
@@ -71,6 +66,25 @@
 
         <!-- Form Name -->
         <legend>&nbsp;</legend>
+        <div id="word_counter"></div>
+
+        <!-- Button (Double) -->
+        <div class="form-group">
+          <label class="col-md-4 control-label" for="start">And...</label>
+          <div class="col-md-8">
+            <button id="start" name="start" class="btn btn-success">Start</button>
+            <button id="stop" name="stop" class="btn btn-danger">Stop</button>
+          </div>
+        </div>
+
+          <!-- Spray Font Size -->
+          <div class="form-group">
+            <label class="col-md-4 control-label" for="start">Adjust font size...</label>
+            <div class="col-md-8" id="font-size-controls">
+              <button id="decrease-font" class="btn btn-default btn-sm">-</button>
+              <button id="increase-font" class="btn btn-default btn-sm">+</button>
+            </div>
+          </div>
 
         <!-- Textarea -->
         <div class="form-group">
@@ -99,15 +113,6 @@
             <label class="checkbox-inline control-label">
               <input type="checkbox" id="audio-enable" name="audio-enable"> Enable Audio
             </label>
-          </div>
-        </div>
-
-        <!-- Button (Double) -->
-        <div class="form-group">
-          <label class="col-md-4 control-label" for="start">And...</label>
-          <div class="col-md-8">
-            <button id="start" name="start" class="btn btn-success">Start</button>
-            <button id="stop" name="stop" class="btn btn-danger">Stop</button>
           </div>
         </div>
 
