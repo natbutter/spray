@@ -73,6 +73,7 @@
           <label class="col-md-4 control-label" for="start">And...</label>
           <div class="col-md-8">
             <button id="start" name="start" class="btn btn-success">Start</button>
+            <button id="pause" name="pause" class="btn btn-warning">Pause</button>
             <button id="stop" name="stop" class="btn btn-danger">Stop</button>
           </div>
         </div>
@@ -142,12 +143,18 @@
 
         $(document).ready(function() {
           $('#start').click(function(event) {
-            var inputText = $('#input-text').val();
-            var wpm = $('#wpm').val();
-
-            sprayReader.setInput(inputText);
-            sprayReader.setWpm(wpm);
+            if (!sprayReader.isPaused) {
+                var inputText = $('#input-text').val();
+                var wpm = $('#wpm').val();
+                sprayReader.setInput(inputText);
+                sprayReader.setWpm(wpm);
+            }
             sprayReader.start();
+            event.preventDefault();
+          });
+
+          $('#pause').click(function(event) {
+            sprayReader.pause();
 
             event.preventDefault();
           });
