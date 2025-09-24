@@ -16,6 +16,7 @@ SprayReader.prototype = {
   words: null,
   totalWordCount: 0,
   isRunning: false,
+  isPaused: false,
   timers: [],
 
   setInput: function(input) {
@@ -79,6 +80,7 @@ SprayReader.prototype = {
 
   start: function() {
     this.isRunning = true;
+    this.isPaused = false;
 
     // If there are any uncleared timers, clear them.
     for(var i = 0; i < this.timers.length; i++) {
@@ -100,6 +102,8 @@ SprayReader.prototype = {
 
   stop: function() {
     this.isRunning = false;
+    this.isPaused = false;
+    this.wordIdx = 0;
 
     // Clear all main timers
     for(var i = 0; i < this.timers.length; i++) {
@@ -122,6 +126,28 @@ SprayReader.prototype = {
         this.wordCounterElement.text("0 / " + this.totalWordCount);
     }
     this.highlighter.html('');
+  },
+
+  pause: function() {
+    this.isRunning = false;
+    this.isPaused = true;
+
+    // Clear all main timers
+    for(var i = 0; i < this.timers.length; i++) {
+      clearTimeout(this.timers[i]);
+    }
+    this.timers = []; // Reset the timers array
+
+    // Clear the fallback timer if it's active
+    if (this.fallbackTimerId) {
+      clearTimeout(this.fallbackTimerId);
+      this.fallbackTimerId = null;
+    }
+
+    // Stop any ongoing speech
+    if (this.speechSynthesis && this.speechSynthesis.speaking) {
+      this.speechSynthesis.cancel();
+    }
   },
 
   displayWordAndIncrement: function() {
