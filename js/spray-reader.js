@@ -3,10 +3,17 @@ var SprayReader = function(containerSelector){
   this.sprayResultElement = $(containerSelector);
   this.wordCounterElement = $('#word_counter');
   this.highlighter = $('#input-text-highlighter');
+  this.inputTextElement = $('#input-text');
   this.fontSize = 3; 
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
   this.speechSynthesis = window.speechSynthesis;
   this.isAudioEnabled = false;
+
+  // Sync scroll from textarea to highlighter
+  var self = this;
+  this.inputTextElement.on('scroll', function() {
+    self.highlighter.scrollTop($(this).scrollTop());
+  });
 };
 SprayReader.prototype = {
   wpm: null,
@@ -18,6 +25,7 @@ SprayReader.prototype = {
   isRunning: false,
   isPaused: false,
   timers: [],
+  selectedVoice: null,
 
   setInput: function(input) {
     this.input = input;
@@ -79,6 +87,12 @@ SprayReader.prototype = {
   setWpm: function(wpm) {
     this.wpm = parseInt(wpm, 10);
     this.msPerWord = 60000/wpm;
+  },
+
+  setVoice: function(voiceURI) {
+    if (!this.speechSynthesis) return;
+    var voices = this.speechSynthesis.getVoices();
+    this.selectedVoice = voices.find(function(v) { return v.voiceURI === voiceURI; }) || null;
   },
 
   start: function() {
@@ -181,6 +195,9 @@ SprayReader.prototype = {
     var textToSpeak = this.input.substring(startCharIdx);
 
     var utterance = new SpeechSynthesisUtterance(textToSpeak);
+    if (this.selectedVoice) {
+      utterance.voice = this.selectedVoice;
+    }
     
     // WPM conversion: typical speaking speed is ~150 WPM (rate = 1.0)
     var rate = this.wpm / 150;
@@ -279,14 +296,14 @@ SprayReader.prototype = {
   increaseFontSize: function() {
     if (this.fontSize < 10) { // Prevent font size from becoming too large
       this.fontSize += 0.5; 
-      this.sprayResultElement.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
+      this.sprayResultElement.css('font-size', `clamp(16px, ${this.fontSize}vw, 96px)`);
     }
   },
 
   decreaseFontSize: function() {
     if (this.fontSize > 1) { 
       this.fontSize -= 0.5; 
-      this.sprayResultElement.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
+      this.sprayResultElement.css('font-size', `clamp(16px, ${this.fontSize}vw, 96px)`);
     }
   },
 
@@ -297,12 +314,23 @@ SprayReader.prototype = {
     }
 
     var text = this.input;
-    var before = text.substring(0, wordObj.start);
-    var word = text.substring(wordObj.start, wordObj.end);
-    var after = text.substring(wordObj.end);
+    var before = escapeHTML(text.substring(0, wordObj.start));
+    var word = escapeHTML(text.substring(wordObj.start, wordObj.end));
+    var after = escapeHTML(text.substring(wordObj.end));
 
     var html = before + '<span class="highlight">' + word + '</span>' + after;
     this.highlighter.html(html);
+
+    // Scroll to the highlighted word
+    var highlightSpan = this.highlighter.find('.highlight');
+    if (highlightSpan.length > 0) {
+      var containerHeight = this.inputTextElement.height();
+      var spanTop = highlightSpan.position().top;
+      var spanHeight = highlightSpan.height();
+      var absoluteTop = spanTop + this.highlighter.scrollTop();
+      var targetScrollTop = absoluteTop - (containerHeight / 2) + (spanHeight / 2);
+      this.inputTextElement.scrollTop(targetScrollTop);
+    }
   }
 };
 
@@ -372,4 +400,13 @@ function pivot(word){ // Removed fontSize parameter
 // because JavaScript isn't as awesome as Python.
 String.prototype.repeat = function( num ){
     return (num<=0) ? "" : new Array( num + 1 ).join( this );
+}
+
+function escapeHTML(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
