@@ -34,6 +34,8 @@ SprayReader.prototype = {
         });
     }
 
+    this.rawWords = allWords;
+
     // Preprocess words
     var tmpWords = [];
 
@@ -67,7 +69,8 @@ SprayReader.prototype = {
       }
     }
 
-    this.words = tmpWords;
+    this.displayWords = tmpWords;
+    this.words = this.isAudioEnabled ? this.rawWords : this.displayWords;
     this.totalWordCount = this.words.length;
     this.wordIdx = 0;
     this.wordCounterElement.text("0 / " + this.totalWordCount);
@@ -92,11 +95,36 @@ SprayReader.prototype = {
       this.speechSynthesis.cancel(); // Stop any ongoing speech
     }
 
-    // Ensure word index starts from the beginning if input is re-started.
-    // this.wordIdx = 0; // This might be better placed in setInput or a dedicated reset method
+    // Update words list based on current audio setting
+    var prevWordIdx = this.wordIdx;
+    var oldWords = this.words;
+    
+    this.words = this.isAudioEnabled ? this.rawWords : this.displayWords;
+    
+    if (this.words) {
+      this.totalWordCount = this.words.length;
+      
+      // If switching modes, map the current word index to the new list
+      if (oldWords && oldWords !== this.words && oldWords.length > 0 && prevWordIdx < oldWords.length) {
+        var currentWordObj = oldWords[prevWordIdx];
+        var targetStart = currentWordObj.start;
+        var newIdx = 0;
+        for (var i = 0; i < this.words.length; i++) {
+          if (this.words[i].start >= targetStart) {
+            newIdx = i;
+            break;
+          }
+        }
+        this.wordIdx = newIdx;
+      }
+    }
 
     if (this.words && this.words.length > 0) {
-      this.displayWordAndIncrement(); // Start the display process
+      if (this.isAudioEnabled && this.speechSynthesis) {
+        this.startAudio();
+      } else {
+        this.displayWordAndIncrement(); // Start the visual-only display process
+      }
     }
   },
 
@@ -111,17 +139,10 @@ SprayReader.prototype = {
     }
     this.timers = []; // Reset the timers array
 
-    // Clear the fallback timer if it's active
-    if (this.fallbackTimerId) {
-      clearTimeout(this.fallbackTimerId);
-      this.fallbackTimerId = null;
-    }
-
     // Stop any ongoing speech
-    if (this.speechSynthesis && this.speechSynthesis.speaking) {
+    if (this.speechSynthesis) {
       this.speechSynthesis.cancel();
     }
-    // No need to reset wordIdx here, as starting again should handle it or setInput.
     if (this.wordCounterElement) {
         this.wordCounterElement.text("0 / " + this.totalWordCount);
     }
@@ -138,16 +159,89 @@ SprayReader.prototype = {
     }
     this.timers = []; // Reset the timers array
 
-    // Clear the fallback timer if it's active
-    if (this.fallbackTimerId) {
-      clearTimeout(this.fallbackTimerId);
-      this.fallbackTimerId = null;
-    }
-
     // Stop any ongoing speech
-    if (this.speechSynthesis && this.speechSynthesis.speaking) {
+    if (this.speechSynthesis) {
       this.speechSynthesis.cancel();
     }
+  },
+
+  startAudio: function() {
+    if (!this.speechSynthesis) return;
+
+    if (this.speechSynthesis.speaking) {
+      this.speechSynthesis.cancel();
+    }
+
+    if (this.wordIdx >= this.words.length) {
+      this.stop();
+      return;
+    }
+
+    var startCharIdx = this.words[this.wordIdx].start;
+    var textToSpeak = this.input.substring(startCharIdx);
+
+    var utterance = new SpeechSynthesisUtterance(textToSpeak);
+    
+    // WPM conversion: typical speaking speed is ~150 WPM (rate = 1.0)
+    var rate = this.wpm / 150;
+    utterance.rate = Math.max(0.5, Math.min(rate, 3.0));
+
+    var thisObj = this;
+    this.audioStartCharIdx = startCharIdx;
+
+    utterance.onboundary = function(event) {
+      if (!thisObj.isRunning) return;
+
+      if (event.name === 'word') {
+        var absoluteCharIdx = thisObj.audioStartCharIdx + event.charIndex;
+        
+        // Find the closest word in this.words that starts at or before the boundary index
+        var matchedIdx = 0;
+        for (var i = 0; i < thisObj.words.length; i++) {
+          if (thisObj.words[i].start <= absoluteCharIdx) {
+            matchedIdx = i;
+          } else {
+            break;
+          }
+        }
+        thisObj.wordIdx = matchedIdx;
+        thisObj.displayWord();
+      }
+    };
+
+    utterance.onend = function() {
+      if (thisObj.isRunning) {
+        thisObj.stop();
+      }
+    };
+
+    utterance.onerror = function(event) {
+      console.error("Speech synthesis error:", event.error);
+      // Fallback to visual-only if audio fails
+      if (thisObj.isRunning) {
+        thisObj.isAudioEnabled = false;
+        thisObj.words = thisObj.displayWords;
+        thisObj.totalWordCount = thisObj.words.length;
+        thisObj.start();
+      }
+    };
+
+    this.speechSynthesis.speak(utterance);
+    this.displayWord();
+  },
+
+  displayWord: function() {
+    if (!this.words || this.wordIdx >= this.words.length) {
+      return;
+    }
+
+    this.wordCounterElement.text((this.wordIdx + 1) + " / " + this.totalWordCount);
+
+    var currentWordObj = this.words[this.wordIdx];
+    this.highlightWord(currentWordObj);
+    var currentWord = currentWordObj.word;
+    var pivotedWord = pivot(currentWord);
+    this.sprayResultElement.html(pivotedWord);
   },
 
   displayWordAndIncrement: function() {
@@ -156,23 +250,15 @@ SprayReader.prototype = {
       return;
     }
 
-    this.wordCounterElement.text((this.wordIdx + 1) + " / " + this.totalWordCount);
+    this.displayWord();
 
-    // Clear any existing timers before displaying the next word
-    // This is important if displayWordAndIncrement is called ahead of schedule (e.g. by a premature fallback)
+    // Clear any existing timers before scheduling the next one
     for(var i = 0; i < this.timers.length; i++) {
       clearTimeout(this.timers[i]);
     }
     this.timers = [];
 
-    var currentWordObj = this.words[this.wordIdx];
-    this.highlightWord(currentWordObj);
-    var currentWord = currentWordObj.word;
-    var pivotedWord = pivot(currentWord);
-    this.sprayResultElement.html(pivotedWord); // Display word in #spray_result
-
-    var thisObj = this; // Store 'this' for use in callbacks
-
+    var thisObj = this;
     var scheduleNextWord = function(delay) {
       if (thisObj.isRunning) {
         var timerId = setTimeout(function() {
@@ -182,104 +268,25 @@ SprayReader.prototype = {
       }
     };
 
-    if (this.isAudioEnabled && this.speechSynthesis) {
-      var wordToSpeak = currentWord.replace(/[•:,.;?!()-]/g, '').trim();
-
-      if (wordToSpeak.length > 0) {
-        var utterance = new SpeechSynthesisUtterance(wordToSpeak);
-        var calculatedRate = this.wpm / 100; // Adjusted from 150 to 100 for potentially more natural variance
-        utterance.rate = Math.max(0.5, Math.min(calculatedRate, 4)); // Max rate clamped to 4 (higher can be too fast)
-
-        // Clear previous fallback timer if any
-        if (this.fallbackTimerId) {
-          clearTimeout(this.fallbackTimerId);
-          this.fallbackTimerId = null;
-        }
-
-        utterance.onend = function() {
-          if (thisObj.fallbackTimerId) { // Clear the fallback timer as speech completed
-            clearTimeout(thisObj.fallbackTimerId);
-            thisObj.fallbackTimerId = null;
-          }
-          if (thisObj.isRunning) {
-            thisObj.wordIdx++;
-            if (thisObj.wordIdx >= thisObj.words.length) {
-              thisObj.stop();
-            } else {
-              scheduleNextWord(thisObj.msPerWord);
-            }
-          }
-        };
-
-        utterance.onerror = function(event) {
-          console.error("Speech synthesis error:", event.error);
-          if (thisObj.fallbackTimerId) { // Clear the fallback timer
-            clearTimeout(thisObj.fallbackTimerId);
-            thisObj.fallbackTimerId = null;
-          }
-          // Proceed to next word even if there's a speech error
-          if (thisObj.isRunning) {
-            thisObj.wordIdx++;
-            if (thisObj.wordIdx >= thisObj.words.length) {
-              thisObj.stop();
-            } else {
-              scheduleNextWord(this.msPerWord); // Schedule next word with standard delay
-            }
-          }
-        };
-
-        this.speechSynthesis.speak(utterance);
-
-        // Fallback timer: estimate max speech duration + small buffer, or use msPerWord as a simple fallback
-        // Using msPerWord * 2 as a simple heuristic for fallback. This might need tuning.
-        // This fallback is to ensure the reader progresses if onend never fires.
-        var fallbackDelay = Math.max(this.msPerWord, 1000) * 2; // Ensure a minimum sensible delay
-        this.fallbackTimerId = setTimeout(function() {
-          thisObj.fallbackTimerId = null; // Clear the ID once the timer fires
-          if (thisObj.speechSynthesis.speaking) { // If it's still speaking, cancel it to avoid overlap
-             thisObj.speechSynthesis.cancel();
-          }
-          // This function will be called if utterance.onend doesn't fire in time.
-          // It effectively simulates onend.
-          if (thisObj.isRunning) {
-            thisObj.wordIdx++;
-            if (thisObj.wordIdx >= thisObj.words.length) {
-              thisObj.stop();
-            } else {
-              scheduleNextWord(thisObj.msPerWord);
-            }
-          }
-        }, fallbackDelay);
-
-      } else { // Word to speak is empty after cleaning
-        this.wordIdx++;
-        if (this.wordIdx >= this.words.length) {
-          this.stop();
-        } else {
-          scheduleNextWord(this.msPerWord); // Schedule next word immediately
-        }
-      }
-    } else { // Audio not enabled
-      this.wordIdx++;
-      if (this.wordIdx >= this.words.length) {
-        this.stop();
-      } else {
-        scheduleNextWord(this.msPerWord);
-      }
+    this.wordIdx++;
+    if (this.wordIdx >= this.words.length) {
+      this.stop();
+    } else {
+      scheduleNextWord(this.msPerWord);
     }
   },
 
   increaseFontSize: function() {
     if (this.fontSize < 10) { // Prevent font size from becoming too large
       this.fontSize += 0.5; 
-      this.container.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
+      this.sprayResultElement.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
     }
   },
 
   decreaseFontSize: function() {
     if (this.fontSize > 1) { 
       this.fontSize -= 0.5; 
-      this.container.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
+      this.sprayResultElement.css('font-size', `clamp(16px, ${this.fontSize}vw, 72px)`);
     }
   },
 
