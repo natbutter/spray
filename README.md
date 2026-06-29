@@ -8,7 +8,7 @@ An open-source speed-reading application written in Javascript.
 
 It is inspired by [OpenSpritz](https://github.com/Miserlou/OpenSpritz) (via [The Happy Hippo's implementation](https://github.com/the-happy-hippo/spray)).
 
-### [Live Demo](https://natbutter.github.io/spray/)
+### Use the [Live Demo](https://natbutter.github.io/spray/) now!
 
 ---
 
@@ -23,6 +23,15 @@ It is inspired by [OpenSpritz](https://github.com/Miserlou/OpenSpritz) (via [The
 
 ---
 
+## Privacy
+
+**Spray is a client-side only application.**
+- **No Data Collection**: None of the text you paste or read is sent to or stored on a server.
+- **Static Hosting**: The live demo is hosted on GitHub Pages, which is a static site hosting service. It only serves HTML, JS, and CSS files directly to your browser.
+- **Local Processing**: All text processing, RSVP rendering, and Text-to-Speech synthesis happen entirely in your local browser.
+
+---
+
 ## Installation & Running Locally
 
 Since Spray is built using pure HTML, CSS, and vanilla JavaScript, there is no build step or package installation required.
@@ -31,16 +40,6 @@ Since Spray is built using pure HTML, CSS, and vanilla JavaScript, there is no b
 1. Clone this repository.
 2. Open [index.html](file:///usr/local/google/home/butterworthnat/HACK/spray/index.html) directly in any modern web browser.
 
-### Hosting on a Web Server
-To host the application:
-1. Copy the files in this repository to your web server's public directory.
-2. Or, run a local web server from the root folder:
-   ```bash
-   python3 -m http.server 8000
-   ```
-   Then open `http://localhost:8000` in your browser.
-
----
 
 ## Codebase Structure
 
