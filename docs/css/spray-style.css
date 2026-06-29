@@ -124,6 +124,8 @@
     -webkit-box-sizing: border-box;
        -moz-box-sizing: border-box;
             box-sizing: border-box;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 #input-text-highlighter {
@@ -137,6 +139,16 @@
     color: transparent;
     -webkit-text-fill-color: transparent;
     z-index: 1;
+    scrollbar-color: transparent transparent;
+}
+
+#input-text-highlighter::-webkit-scrollbar {
+    color: transparent;
+    background: transparent;
+}
+
+#input-text-highlighter::-webkit-scrollbar-thumb {
+    background: transparent;
 }
 
 #input-text {
