@@ -13,8 +13,9 @@ Fully functional demo: https://natbutter.github.io/spray/
 
 ## Installation
 
-1. Copy all files in `docs/` to some directory on your webserver.
-2. Enjoy speed-reading.
+1. Clone or download this repository.
+2. Serve the root directory on your webserver.
+3. Enjoy speed-reading.
 
 ## Features
 
