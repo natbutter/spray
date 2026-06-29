@@ -1,61 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Open-source speed-reading tool, written in JavaScript">
-    <meta name="author" content="Chaim Peck">
-    <link rel="shortcut icon" href="favicon.png">
 
-    <title>Spray</title>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Open-source speed-reading spritz tool, written in JavaScript">
+  <meta name="author" content="Nathaniel Butterworth">
+  <link rel="shortcut icon" href="favicon.png">
 
-    <!-- Bootstrap core CSS -->
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <title>Spray</title>
 
-    <!-- Custom styles for this template -->
-    <link href="css/site-style.css" rel="stylesheet">
+  <!-- Bootstrap core CSS -->
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet" media="screen">
 
-    <!-- Spray -->
-    <link href='https://fonts.googleapis.com/css?family=Droid+Sans+Mono' rel='stylesheet' type='text/css'>
-    <link href="css/spray-style.css" rel="stylesheet"> 
+  <!-- Custom styles for this template -->
+  <link href="css/site-style.css" rel="stylesheet">
 
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
+  <!-- Spray -->
+  <link href='https://fonts.googleapis.com/css?family=Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+  <link href="css/spray-style.css" rel="stylesheet">
+
+  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
     <![endif]-->
-  </head>
+</head>
 
-  <body>
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">      
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">Spray Reader</a>
-        </div>
+<body>
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Spray Reader</a>
       </div>
     </div>
-    <!-- Main jumbotron for a primary marketing message or call to action -->
-    <div class="jumbotron">
-      <div class="container">
-        <h1>Spray Reader</h1>
-        <p>Paste any text and have it "sprayed" back for faster reading ability.</p>
+  </div>
+  <!-- Main intro banner for the application -->
+  <div class="intro-banner">
+    <div class="container">
+      <h1>Spray Reader</h1>
+      <p>Paste any text and have it "sprayed" back one word at a time highlighting the optimal focal
+        point for faster speed-reading. Also known as "spritz". Customise your experience by adjusting the speed (WPM),
+        resizing the text, or enabling
+        text-to-speech audio.</p>
     </div>
 
     <div class="container">
       <div id="spray_container">
         <div id="guide_top">
-            ————————————<span id="notch">&#1092;</span>—————————————
+          ————————————<span id="notch">&#1092;</span>—————————————
         </div>
         <div id="spray_result">&nbsp;</div>
         <div id="guide_bottom">
-            ——————————————————————————
+          ——————————————————————————
         </div>
       </div>
     </div>
@@ -64,19 +68,19 @@
       <form class="form-horizontal">
         <fieldset>
 
-        <!-- Form Name -->
-        <legend>&nbsp;</legend>
-        <div id="word_counter"></div>
+          <!-- Form Name -->
+          <legend>&nbsp;</legend>
+          <div id="word_counter"></div>
 
-        <!-- Button (Double) -->
-        <div class="form-group">
-          <label class="col-md-4 control-label" for="start">And...</label>
-          <div class="col-md-8">
-            <button id="start" name="start" class="btn btn-success">Start</button>
-            <button id="pause" name="pause" class="btn btn-warning">Pause</button>
-            <button id="stop" name="stop" class="btn btn-danger">Stop</button>
+          <!-- Button (Double) -->
+          <div class="form-group">
+            <label class="col-md-4 control-label" for="start">And...</label>
+            <div class="col-md-8">
+              <button id="start" name="start" class="btn btn-success">Start</button>
+              <button id="pause" name="pause" class="btn btn-warning">Pause</button>
+              <button id="stop" name="stop" class="btn btn-danger">Stop</button>
+            </div>
           </div>
-        </div>
 
           <!-- Spray Font Size -->
           <div class="form-group">
@@ -87,36 +91,46 @@
             </div>
           </div>
 
-        <!-- Select Basic -->
-        <div class="form-group">
-          <label class="col-md-4 control-label" for="wpm">Set the Words-Per-Minute</label>
-          <div class="col-md-4">
-            <select id="wpm" name="wpm" class="form-control">
-              <option value="100">100 wpm</option>
-              <option value="200">200 wpm</option>
-              <option value="300">300 wpm</option>
-              <option value="400">400 wpm</option>
-              <option value="500" selected>500 wpm</option>
-              <option value="600">600 wpm</option>
-              <option value="700">700 wpm</option>
-              <option value="800">800 wpm</option>
-            </select>
+          <!-- Select Basic -->
+          <div class="form-group">
+            <label class="col-md-4 control-label" for="wpm">Set the Words-Per-Minute</label>
+            <div class="col-md-4">
+              <select id="wpm" name="wpm" class="form-control">
+                <option value="100">100 wpm</option>
+                <option value="200">200 wpm</option>
+                <option value="300">300 wpm</option>
+                <option value="400">400 wpm</option>
+                <option value="500" selected>500 wpm</option>
+                <option value="600">600 wpm</option>
+                <option value="700">700 wpm</option>
+                <option value="800">800 wpm</option>
+              </select>
+            </div>
+            <div class="col-md-4"> <!-- Adjusted column size for checkbox -->
+              <label class="checkbox-inline control-label">
+                <input type="checkbox" id="audio-enable" name="audio-enable"> Enable Audio
+              </label>
+            </div>
           </div>
-          <div class="col-md-4"> <!-- Adjusted column size for checkbox -->
-            <label class="checkbox-inline control-label">
-              <input type="checkbox" id="audio-enable" name="audio-enable"> Enable Audio
-            </label>
-          </div>
-        </div>
 
-        <!-- Textarea -->
-        <div class="form-group">
-          <label class="col-md-4 control-label" for="input-text">Paste Some Text</label>
-          <div class="col-md-6" id="input-text-container">
-            <div id="input-text-highlighter" class="form-control"></div>
-            <textarea class="form-control" id="input-text" name="input-text" rows="10" cols="50"></textarea>
+          <!-- Voice Selector -->
+          <div class="form-group" id="voice-select-group" style="display: none;">
+            <label class="col-md-4 control-label" for="voice-select">Choose Voice</label>
+            <div class="col-md-4">
+              <select id="voice-select" name="voice-select" class="form-control">
+                <option value="">Loading voices...</option>
+              </select>
+            </div>
           </div>
-        </div>
+
+          <!-- Textarea -->
+          <div class="form-group">
+            <label class="col-md-4 control-label" for="input-text">Paste Some Text</label>
+            <div class="col-md-6" id="input-text-container">
+              <div id="input-text-highlighter" class="form-control"></div>
+              <textarea class="form-control" id="input-text" name="input-text" rows="10" cols="50"></textarea>
+            </div>
+          </div>
 
         </fieldset>
       </form>
@@ -126,8 +140,9 @@
       <hr>
 
       <footer>
-        <p>&copy; Chaim Peck 2014 - More information about OpenSpritz here: <a href="https://github.com/Miserlou/OpenSpritz" target="_new">https://github.com/Miserlou/OpenSpritz</a></p>
-        <p>&copy; This repo can be modified at: <a href="https://github.com/natbutter/spray" target="_new">https://github.com/natbutter/spray</a></p>
+        <p>Built from <a href="https://github.com/the-happy-hippo/spray">The Happy Hippo's</a> implemenation of <a
+            href="https://github.com/Miserlou/OpenSpritz" target="_new">OpenSpritz</a>. Feel free to update or fork this
+          at: <a href="https://github.com/natbutter/spray" target="_new">https://github.com/natbutter/spray</a></p>
       </footer>
     </div> <!-- /container -->
 
@@ -141,47 +156,102 @@
     <script type="text/javascript">
         var sprayReader = new SprayReader('#spray_result');
 
-        $(document).ready(function() {
-          $('#start').click(function(event) {
+        $(document).ready(function () {
+          $('#start').click(function (event) {
             if (!sprayReader.isPaused) {
-                var inputText = $('#input-text').val();
-                var wpm = $('#wpm').val();
-                sprayReader.setInput(inputText);
-                sprayReader.setWpm(wpm);
+              var inputText = $('#input-text').val();
+              var wpm = $('#wpm').val();
+              sprayReader.setInput(inputText);
+              sprayReader.setWpm(wpm);
             }
             sprayReader.start();
             event.preventDefault();
           });
 
-          $('#pause').click(function(event) {
-            sprayReader.pause();
+        $('#pause').click(function (event) {
+          sprayReader.pause();
 
-            event.preventDefault();
-          });
+          event.preventDefault();
+        });
 
-          $('#stop').click(function(event) {
-            sprayReader.stop();
+        $('#stop').click(function (event) {
+          sprayReader.stop();
 
-            event.preventDefault();
-          });
+          event.preventDefault();
+        });
 
-          $('#increase-font').click(function(event) {
-            sprayReader.increaseFontSize();
-            event.preventDefault();
-          });
+        $('#increase-font').click(function (event) {
+          sprayReader.increaseFontSize();
+          event.preventDefault();
+        });
 
-          $('#decrease-font').click(function(event) {
-            sprayReader.decreaseFontSize();
-            event.preventDefault();
-          });
+        $('#decrease-font').click(function (event) {
+          sprayReader.decreaseFontSize();
+          event.preventDefault();
+        });
 
-          $('#audio-enable').change(function(event) {
-            sprayReader.isAudioEnabled = $(this).is(':checked');
-            if (!sprayReader.isAudioEnabled && sprayReader.speechSynthesis && sprayReader.speechSynthesis.speaking) {
+        $('#audio-enable').change(function (event) {
+          var isChecked = $(this).is(':checked');
+          sprayReader.isAudioEnabled = isChecked;
+          if (isChecked) {
+            $('#voice-select-group').show();
+            populateVoices();
+          } else {
+            $('#voice-select-group').hide();
+            if (sprayReader.speechSynthesis && sprayReader.speechSynthesis.speaking) {
               sprayReader.speechSynthesis.cancel();
             }
-          });
+          }
         });
+
+        function populateVoices() {
+          if (!sprayReader.speechSynthesis) return;
+          var voices = sprayReader.speechSynthesis.getVoices();
+          var voiceSelect = $('#voice-select');
+          var currentVal = voiceSelect.val();
+          voiceSelect.empty();
+          
+          if (voices.length === 0) {
+            voiceSelect.append('<option value="">No voices available</option>');
+            return;
+          }
+
+          // Sort voices by language then name
+          voices.sort(function(a, b) {
+            if (a.lang < b.lang) return -1;
+            if (a.lang > b.lang) return 1;
+            if (a.name < b.name) return -1;
+            if (a.name > b.name) return 1;
+            return 0;
+          });
+
+          voices.forEach(function(voice) {
+            var isGoogle = voice.name.indexOf('Google') !== -1;
+            var label = voice.name + ' (' + voice.lang + ')' + (isGoogle ? ' ✨' : '');
+            var option = $('<option>')
+              .val(voice.voiceURI)
+              .text(label);
+            if (voice.voiceURI === currentVal) {
+              option.attr('selected', 'selected');
+            }
+            voiceSelect.append(option);
+          });
+
+          sprayReader.setVoice(voiceSelect.val());
+        }
+
+        if (sprayReader.speechSynthesis) {
+          if (sprayReader.speechSynthesis.onvoiceschanged !== undefined) {
+            sprayReader.speechSynthesis.onvoiceschanged = populateVoices;
+          }
+          populateVoices();
+        }
+
+        $('#voice-select').change(function() {
+          sprayReader.setVoice($(this).val());
+        });
+      });
     </script>
-  </body>
+</body>
+
 </html>
