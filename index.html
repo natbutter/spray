@@ -225,13 +225,29 @@
             return 0;
           });
 
+          // Determine default voice if no user selection exists yet
+          var defaultVoiceURI = null;
+          if (!currentVal) {
+            var preferredVoice = voices.find(function(v) {
+              var nameLower = v.name.toLowerCase();
+              return nameLower.indexOf('chrom') !== -1 && nameLower.indexOf('us english') !== -1 && nameLower.indexOf('4') !== -1;
+            });
+            if (preferredVoice) {
+              defaultVoiceURI = preferredVoice.voiceURI;
+            }
+          }
+
           voices.forEach(function(voice) {
             var isGoogle = voice.name.indexOf('Google') !== -1;
             var label = voice.name + ' (' + voice.lang + ')' + (isGoogle ? ' ✨' : '');
             var option = $('<option>')
               .val(voice.voiceURI)
               .text(label);
-            if (voice.voiceURI === currentVal) {
+            if (currentVal) {
+              if (voice.voiceURI === currentVal) {
+                option.attr('selected', 'selected');
+              }
+            } else if (defaultVoiceURI && voice.voiceURI === defaultVoiceURI) {
               option.attr('selected', 'selected');
             }
             voiceSelect.append(option);
