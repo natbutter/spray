@@ -8,12 +8,23 @@ var SprayReader = function(containerSelector){
   this.guideElements = $('#guide_top, #guide_bottom, #notch');
   this.speechSynthesis = window.speechSynthesis;
   this.isAudioEnabled = false;
+  this.activeHighlightSpan = null;
 
-  // Sync scroll from textarea to highlighter
+  // Sync scroll and dimensions from textarea to highlighter
   var self = this;
   this.inputTextElement.on('scroll', function() {
     self.highlighter.scrollTop($(this).scrollTop());
   });
+  $(window).on('resize', function() {
+    self.syncHighlighterDimensions();
+  });
+  if (typeof ResizeObserver === 'function' && this.inputTextElement[0]) {
+    this.resizeObserver = new ResizeObserver(function() {
+      self.syncHighlighterDimensions();
+    });
+    this.resizeObserver.observe(this.inputTextElement[0]);
+  }
+  this.syncHighlighterDimensions();
 };
 SprayReader.prototype = {
   wpm: null,
@@ -29,7 +40,6 @@ SprayReader.prototype = {
 
   setInput: function(input) {
     this.input = input;
-    this.highlighter.html('');
 
     var re = /\S+/g;
     var match;
@@ -43,6 +53,7 @@ SprayReader.prototype = {
     }
 
     this.rawWords = allWords;
+    this.renderHighlighter();
 
     // Preprocess words
     var tmpWords = [];
@@ -54,7 +65,8 @@ SprayReader.prototype = {
       var processedWordObj = {
           word: word,
           start: wordObj.start,
-          end: wordObj.end
+          end: wordObj.end,
+          rawObj: wordObj
       };
 
       if(word.indexOf('.') != -1){
@@ -109,6 +121,10 @@ SprayReader.prototype = {
       this.speechSynthesis.cancel(); // Stop any ongoing speech
     }
 
+    if (this.highlighter && this.highlighter.length > 0 && this.highlighter[0].childNodes.length === 0 && this.input) {
+      this.renderHighlighter();
+    }
+
     // Update words list based on current audio setting
     var prevWordIdx = this.wordIdx;
     var oldWords = this.words;
@@ -122,11 +138,21 @@ SprayReader.prototype = {
       if (oldWords && oldWords !== this.words && oldWords.length > 0 && prevWordIdx < oldWords.length) {
         var currentWordObj = oldWords[prevWordIdx];
         var targetStart = currentWordObj.start;
+        if (targetStart === -1) {
+          for (var j = prevWordIdx - 1; j >= 0; j--) {
+            if (oldWords[j].start !== -1) {
+              targetStart = oldWords[j].start;
+              break;
+            }
+          }
+        }
         var newIdx = 0;
-        for (var i = 0; i < this.words.length; i++) {
-          if (this.words[i].start >= targetStart) {
-            newIdx = i;
-            break;
+        if (targetStart !== -1) {
+          for (var i = 0; i < this.words.length; i++) {
+            if (this.words[i].start >= targetStart) {
+              newIdx = i;
+              break;
+            }
           }
         }
         this.wordIdx = newIdx;
@@ -160,6 +186,7 @@ SprayReader.prototype = {
     if (this.wordCounterElement) {
         this.wordCounterElement.text("0 / " + this.totalWordCount);
     }
+    this.activeHighlightSpan = null;
     this.highlighter.html('');
   },
 
@@ -286,11 +313,7 @@ SprayReader.prototype = {
     };
 
     this.wordIdx++;
-    if (this.wordIdx >= this.words.length) {
-      this.stop();
-    } else {
-      scheduleNextWord(this.msPerWord);
-    }
+    scheduleNextWord(this.msPerWord);
   },
 
   increaseFontSize: function() {
@@ -307,29 +330,89 @@ SprayReader.prototype = {
     }
   },
 
+  syncHighlighterDimensions: function() {
+    var inputEl = this.inputTextElement && this.inputTextElement[0];
+    var highlighterEl = this.highlighter && this.highlighter[0];
+    if (!inputEl || !highlighterEl) return;
+
+    if (inputEl.clientWidth > 0 && inputEl.clientHeight > 0 && typeof window.getComputedStyle === 'function') {
+      var style = window.getComputedStyle(inputEl);
+      var borderLeft = parseFloat(style.borderLeftWidth) || 0;
+      var borderRight = parseFloat(style.borderRightWidth) || 0;
+      var borderTop = parseFloat(style.borderTopWidth) || 0;
+      var borderBottom = parseFloat(style.borderBottomWidth) || 0;
+
+      // Match highlighter content+padding box to textarea client dimensions to prevent scrollbar width drift
+      highlighterEl.style.width = (inputEl.clientWidth + borderLeft + borderRight) + 'px';
+      highlighterEl.style.height = (inputEl.clientHeight + borderTop + borderBottom) + 'px';
+    }
+  },
+
+  renderHighlighter: function() {
+    this.activeHighlightSpan = null;
+    if (!this.highlighter || this.highlighter.length === 0) return;
+
+    var highlighterEl = this.highlighter[0];
+    highlighterEl.innerHTML = '';
+
+    var input = this.input || '';
+    var words = this.rawWords || [];
+    var fragment = document.createDocumentFragment();
+    var lastIndex = 0;
+
+    for (var i = 0; i < words.length; i++) {
+      var wordObj = words[i];
+      if (wordObj.start > lastIndex) {
+        fragment.appendChild(document.createTextNode(input.slice(lastIndex, wordObj.start)));
+      }
+      var span = document.createElement('span');
+      span.textContent = input.slice(wordObj.start, wordObj.end);
+      wordObj.span = span;
+      fragment.appendChild(span);
+      lastIndex = wordObj.end;
+    }
+
+    if (lastIndex < input.length) {
+      fragment.appendChild(document.createTextNode(input.slice(lastIndex)));
+    }
+    if (input.length > 0 && input.charAt(input.length - 1) === '\n') {
+      fragment.appendChild(document.createTextNode(' '));
+    }
+
+    highlighterEl.appendChild(fragment);
+    this.syncHighlighterDimensions();
+    if (this.inputTextElement && this.inputTextElement[0]) {
+      highlighterEl.scrollTop = this.inputTextElement[0].scrollTop;
+    }
+  },
+
   highlightWord: function(wordObj) {
-    if (wordObj.start === -1) {
-      this.highlighter.html('');
+    var targetSpan = wordObj ? (wordObj.rawObj ? wordObj.rawObj.span : wordObj.span) : null;
+
+    if (this.activeHighlightSpan && this.activeHighlightSpan !== targetSpan) {
+      this.activeHighlightSpan.className = '';
+      this.activeHighlightSpan = null;
+    }
+
+    if (!wordObj || wordObj.start === -1 || !targetSpan) {
       return;
     }
 
-    var text = this.input;
-    var before = escapeHTML(text.substring(0, wordObj.start));
-    var word = escapeHTML(text.substring(wordObj.start, wordObj.end));
-    var after = escapeHTML(text.substring(wordObj.end));
+    if (this.activeHighlightSpan !== targetSpan) {
+      targetSpan.className = 'highlight';
+      this.activeHighlightSpan = targetSpan;
+    }
 
-    var html = before + '<span class="highlight">' + word + '</span>' + after;
-    this.highlighter.html(html);
-
-    // Scroll to the highlighted word
-    var highlightSpan = this.highlighter.find('.highlight');
-    if (highlightSpan.length > 0) {
-      var containerHeight = this.inputTextElement.height();
-      var spanTop = highlightSpan.position().top;
-      var spanHeight = highlightSpan.height();
-      var absoluteTop = spanTop + this.highlighter.scrollTop();
-      var targetScrollTop = absoluteTop - (containerHeight / 2) + (spanHeight / 2);
-      this.inputTextElement.scrollTop(targetScrollTop);
+    // Scroll to keep the highlighted word centered and synchronously match highlighter scrollTop
+    var inputEl = this.inputTextElement && this.inputTextElement[0];
+    var highlighterEl = this.highlighter && this.highlighter[0];
+    if (inputEl && highlighterEl) {
+      var containerHeight = inputEl.clientHeight;
+      var targetScrollTop = targetSpan.offsetTop - (containerHeight / 2) + (targetSpan.offsetHeight / 2);
+      var maxScrollTop = Math.max(0, inputEl.scrollHeight - containerHeight);
+      targetScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
+      inputEl.scrollTop = targetScrollTop;
+      highlighterEl.scrollTop = inputEl.scrollTop;
     }
   }
 };
@@ -400,13 +483,4 @@ function pivot(word){ // Removed fontSize parameter
 // because JavaScript isn't as awesome as Python.
 String.prototype.repeat = function( num ){
     return (num<=0) ? "" : new Array( num + 1 ).join( this );
-}
-
-function escapeHTML(text) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
